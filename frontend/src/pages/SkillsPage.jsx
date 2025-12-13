@@ -28,10 +28,12 @@ export default function SkillsPage() {
       if (search) params.search = search;
 
       const res = await skillService.getAll(params);
-      setSkills(res.data.content || []);
-      setTotalPages(res.data.totalPages || 0);
+      const skills = res?.data?.content || res?.content || (Array.isArray(res) ? res : []);
+      const totalPages = res?.data?.totalPages || res?.totalPages || 0;
+      setSkills(skills);
+      setTotalPages(totalPages);
     } catch (error) {
-      console.error('Error loading skills:', error);
+      console.error('Error loading skills:', error.response?.data || error.message);
     } finally {
       setLoading(false);
     }

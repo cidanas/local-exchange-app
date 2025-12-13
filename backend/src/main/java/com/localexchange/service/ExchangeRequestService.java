@@ -35,43 +35,64 @@ public class ExchangeRequestService {
      * Créer une demande d'échange
      */
     public ExchangeRequestDTO createRequest(ExchangeRequestDTO dto, String beneficiaireEmail) {
+        // Récupérer le bénéficiaire (celui qui fait la demande)
         User beneficiaire = userRepository.findByEmail(beneficiaireEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", "email", beneficiaireEmail));
         
+        // Récupérer l'item ou la skill
+        ItemListing item = null;
+        SkillListing skill = null;
+        User donateur = null;
+        
+        if (dto.getItemListingId() != null) {
+            @SuppressWarnings("null")
+            ItemListing itemTemp = itemListingRepository.findById(dto.getItemListingId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Objet", "id", dto.getItemListingId()));
+            item = itemTemp;
+            donateur = itemTemp.getOwner();
+        } else if (dto.getSkillListingId() != null) {
+            @SuppressWarnings("null")
+            SkillListing skillTemp = skillListingRepository.findById(dto.getSkillListingId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Compétence", "id", dto.getSkillListingId()));
+            skill = skillTemp;
+            donateur = skillTemp.getOwner();
+        } else {
+            throw new IllegalArgumentException("Une demande doit concerner un objet ou une compétence");
+        }
+        
+        if (donateur == null) {
+            throw new IllegalStateException("Le propriétaire de la ressource est introuvable");
+        }
+        
+        // Créer la demande d'échange
         ExchangeRequest request = new ExchangeRequest();
         request.setOffreEnRetour(dto.getOffreEnRetour());
         request.setDateEchange(dto.getDateEchange());
         request.setMessageInitial(dto.getMessageInitial());
         request.setStatut(ExchangeStatus.PENDING);
         request.setBeneficiaire(beneficiaire);
-        
-        // Déterminer si c'est pour un item ou une skill
-        if (dto.getItemListingId() != null) {
-            ItemListing item = itemListingRepository.findById(dto.getItemListingId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Objet", "id", dto.getItemListingId()));
-            request.setItemListing(item);
-            request.setDonateur(item.getOwner());
-        } else if (dto.getSkillListingId() != null) {
-            SkillListing skill = skillListingRepository.findById(dto.getSkillListingId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Compétence", "id", dto.getSkillListingId()));
-            request.setSkillListing(skill);
-            request.setDonateur(skill.getOwner());
-        } else {
-            throw new IllegalArgumentException("Une demande doit concerner un objet ou une compétence");
-        }
+        request.setDonateur(donateur);
+        request.setItemListing(item);
+        request.setSkillListing(skill);
         
         ExchangeRequest savedRequest = exchangeRequestRepository.save(request);
         
-        // Créer notification pour le donateur
-        String message = String.format("%s souhaite échanger avec vous", beneficiaire.getNom());
-        notificationService.createNotification(
-                savedRequest.getDonateur().getId(),
-                NotificationType.NEW_REQUEST,
-                message,
-                savedRequest.getId(),
-                savedRequest.getItemListing() != null ? savedRequest.getItemListing().getId() : null,
-                savedRequest.getSkillListing() != null ? savedRequest.getSkillListing().getId() : null
-        );
+        // Créer notification pour le donateur (séparé pour éviter les problèmes de transaction)
+        try {
+            String message = String.format("%s souhaite échanger avec vous", beneficiaire.getNom());
+            notificationService.createNotification(
+                    donateur.getId(),
+                    NotificationType.NEW_REQUEST,
+                    message,
+                    savedRequest.getId(),
+                    item != null ? item.getId() : null,
+                    skill != null ? skill.getId() : null
+            );
+        } catch (Exception e) {
+            // Log l'erreur mais ne pas fail la création de la demande
+            System.err.println("Erreur lors de la création de la notification: " + e.getMessage());
+            e.printStackTrace();
+        }
         
         return convertToDTO(savedRequest);
     }
@@ -107,6 +128,7 @@ public class ExchangeRequestService {
     /**
      * Récupérer un échange par ID
      */
+    @SuppressWarnings("null")
     public ExchangeRequestDTO getExchangeById(Long requestId, String userEmail) {
         ExchangeRequest request = exchangeRequestRepository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Demande d'échange", "id", requestId));
@@ -123,6 +145,7 @@ public class ExchangeRequestService {
     /**
      * Accepter une demande d'échange
      */
+    @SuppressWarnings("null")
     public ExchangeRequestDTO acceptRequest(Long requestId, String donateurEmail) {
         ExchangeRequest request = exchangeRequestRepository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Demande d'échange", "id", requestId));
@@ -157,6 +180,7 @@ public class ExchangeRequestService {
     /**
      * Refuser une demande d'échange
      */
+    @SuppressWarnings("null")
     public ExchangeRequestDTO refuseRequest(Long requestId, String donateurEmail) {
         ExchangeRequest request = exchangeRequestRepository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Demande d'échange", "id", requestId));
@@ -191,6 +215,7 @@ public class ExchangeRequestService {
     /**
      * Marquer un échange comme terminé
      */
+    @SuppressWarnings("null")
     public ExchangeRequestDTO completeExchange(Long requestId, String userEmail) {
         ExchangeRequest request = exchangeRequestRepository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Demande d'échange", "id", requestId));
@@ -215,6 +240,7 @@ public class ExchangeRequestService {
     /**
      * Annuler une demande d'échange
      */
+    @SuppressWarnings("null")
     public ExchangeRequestDTO cancelRequest(Long requestId, String userEmail) {
         ExchangeRequest request = exchangeRequestRepository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Demande d'échange", "id", requestId));
@@ -234,34 +260,43 @@ public class ExchangeRequestService {
      * Convertir ExchangeRequest en ExchangeRequestDTO
      */
     private ExchangeRequestDTO convertToDTO(ExchangeRequest request) {
-        ExchangeRequestDTO dto = new ExchangeRequestDTO();
-        dto.setId(request.getId());
-        dto.setOffreEnRetour(request.getOffreEnRetour());
-        dto.setDateEchange(request.getDateEchange());
-        dto.setStatut(request.getStatut().name());
-        dto.setMessageInitial(request.getMessageInitial());
-        
-        dto.setBeneficiaireId(request.getBeneficiaire().getId());
-        dto.setBeneficiaireNom(request.getBeneficiaire().getNom());
-        dto.setBeneficiairePhoto(request.getBeneficiaire().getPhoto());
-        
-        dto.setDonateurId(request.getDonateur().getId());
-        dto.setDonateurNom(request.getDonateur().getNom());
-        dto.setDonateurPhoto(request.getDonateur().getPhoto());
-        
-        if (request.getItemListing() != null) {
-            dto.setItemListingId(request.getItemListing().getId());
-            dto.setItemTitre(request.getItemListing().getTitre());
+        try {
+            ExchangeRequestDTO dto = new ExchangeRequestDTO();
+            dto.setId(request.getId());
+            dto.setOffreEnRetour(request.getOffreEnRetour());
+            dto.setDateEchange(request.getDateEchange());
+            dto.setStatut(request.getStatut().name());
+            dto.setMessageInitial(request.getMessageInitial());
+
+            // Charger les relations
+            if (request.getBeneficiaire() != null) {
+                dto.setBeneficiaireId(request.getBeneficiaire().getId());
+                dto.setBeneficiaireNom(request.getBeneficiaire().getNom());
+                dto.setBeneficiairePhoto(request.getBeneficiaire().getPhoto());
+            }
+
+            if (request.getDonateur() != null) {
+                dto.setDonateurId(request.getDonateur().getId());
+                dto.setDonateurNom(request.getDonateur().getNom());
+                dto.setDonateurPhoto(request.getDonateur().getPhoto());
+            }
+
+            if (request.getItemListing() != null) {
+                dto.setItemListingId(request.getItemListing().getId());
+                dto.setItemTitre(request.getItemListing().getTitre());
+            }
+
+            if (request.getSkillListing() != null) {
+                dto.setSkillListingId(request.getSkillListing().getId());
+                dto.setSkillTitre(request.getSkillListing().getTitre());
+            }
+
+            dto.setCreatedAt(request.getCreatedAt());
+            dto.setUpdatedAt(request.getUpdatedAt());
+
+            return dto;
+        } catch (NullPointerException e) {
+            throw new IllegalStateException("La conversion de la demande d'échange ID " + request.getId() + " a échoué à cause de données invalides (possiblement une référence nulle à une entité liée).", e);
         }
-        
-        if (request.getSkillListing() != null) {
-            dto.setSkillListingId(request.getSkillListing().getId());
-            dto.setSkillTitre(request.getSkillListing().getTitre());
-        }
-        
-        dto.setCreatedAt(request.getCreatedAt());
-        dto.setUpdatedAt(request.getUpdatedAt());
-        
-        return dto;
     }
 }

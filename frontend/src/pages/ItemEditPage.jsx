@@ -73,7 +73,7 @@ export default function ItemEditPage() {
     try {
       const dataToSubmit = {
         ...form,
-        images: form.images && form.images.length > 0 ? JSON.stringify(form.images) : null,
+        images: form.images && form.images.length > 0 ? JSON.stringify(form.images) : (item?.images || null),
       };
       await itemService.update(id, dataToSubmit);
       navigate(`/items/${id}`);

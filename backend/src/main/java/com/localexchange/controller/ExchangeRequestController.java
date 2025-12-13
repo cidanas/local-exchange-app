@@ -40,6 +40,9 @@ public class ExchangeRequestController {
      */
     @GetMapping("/received")
     public ResponseEntity<?> getReceivedRequests(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return new ResponseEntity<>("Authentification requise", org.springframework.http.HttpStatus.UNAUTHORIZED);
+        }
         List<ExchangeRequestDTO> requests = exchangeRequestService.getReceivedRequests(userDetails.getUsername());
         return ResponseEntity.ok(requests);
     }
@@ -49,6 +52,9 @@ public class ExchangeRequestController {
      */
     @GetMapping("/sent")
     public ResponseEntity<?> getSentRequests(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return new ResponseEntity<>("Authentification requise", org.springframework.http.HttpStatus.UNAUTHORIZED);
+        }
         List<ExchangeRequestDTO> requests = exchangeRequestService.getSentRequests(userDetails.getUsername());
         return ResponseEntity.ok(requests);
     }

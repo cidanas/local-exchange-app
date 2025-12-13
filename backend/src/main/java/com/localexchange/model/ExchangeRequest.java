@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -47,11 +48,11 @@ public class ExchangeRequest {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
     
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "beneficiaire_id", nullable = false)
     private User beneficiaire;
     
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "donateur_id", nullable = false)
     private User donateur;
     
@@ -63,9 +64,11 @@ public class ExchangeRequest {
     @JoinColumn(name = "skill_listing_id")
     private SkillListing skillListing;
     
+    @JsonIgnore
     @OneToMany(mappedBy = "exchangeRequest", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Message> messages = new ArrayList<>();
     
-    @OneToOne(mappedBy = "exchangeRequest", cascade = CascadeType.ALL)
-    private Review review;
+    @JsonIgnore
+    @OneToMany(mappedBy = "exchangeRequest", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Review> reviews = new ArrayList<>();
 }

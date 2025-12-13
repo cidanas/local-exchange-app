@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -58,18 +59,23 @@ public class User {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
     
+    @JsonIgnore
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemListing> itemListings = new ArrayList<>();
     
+    @JsonIgnore
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SkillListing> skillListings = new ArrayList<>();
     
+    @JsonIgnore
     @OneToMany(mappedBy = "reviewer", cascade = CascadeType.ALL)
     private List<Review> reviewsGiven = new ArrayList<>();
     
+    @JsonIgnore
     @OneToMany(mappedBy = "reviewee", cascade = CascadeType.ALL)
     private List<Review> reviewsReceived = new ArrayList<>();
     
+    @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Notification> notifications = new ArrayList<>();
 }

@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import Alert from '../components/common/Alert';
 
 export default function MessagesPage() {
   const { exchangeId } = useParams();
@@ -13,6 +14,7 @@ export default function MessagesPage() {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -27,10 +29,18 @@ export default function MessagesPage() {
 
   const loadMessages = async () => {
     try {
+      setError(null);
       const res = await messageService.getConversation(exchangeId);
-      setMessages(res.data || []);
+      console.log('Messages response:', res);
+      
+      const messages = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
+      console.log('Processed messages:', messages);
+      
+      setMessages(messages);
     } catch (error) {
-      console.error('Error loading messages:', error);
+      console.error('Error loading messages:', error.response?.data || error.message);
+      console.error('Full error:', error);
+      setError(`Erreur lors du chargement des messages: ${error.response?.data?.message || error.message}`);
     } finally {
       setLoading(false);
     }
@@ -45,6 +55,7 @@ export default function MessagesPage() {
     if (!newMessage.trim()) return;
 
     try {
+      setError(null);
       await messageService.send({
         contenu: newMessage,
         exchangeRequestId: parseInt(exchangeId),
@@ -52,7 +63,9 @@ export default function MessagesPage() {
       setNewMessage('');
       loadMessages();
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('Error sending message:', error.response?.data || error.message);
+      console.error('Full error:', error);
+      setError(`Erreur d'envoi: ${error.response?.data?.message || error.message}`);
     }
   };
 
@@ -61,6 +74,10 @@ export default function MessagesPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Messagerie</h1>
+
+      {error && (
+        <Alert type="error" message={error} onDismiss={() => setError(null)} />
+      )}
 
       <Card className="h-[600px] flex flex-col">
         {/* Messages */}

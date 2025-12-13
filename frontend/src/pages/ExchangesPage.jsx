@@ -24,16 +24,27 @@ export default function ExchangesPage() {
 
   const loadExchanges = async () => {
     setLoading(true);
+    setError(''); // Clear previous errors
     try {
       const [receivedRes, sentRes] = await Promise.all([
         exchangeService.getReceived(),
         exchangeService.getSent(),
       ]);
-      setReceivedRequests(receivedRes.data || []);
-      setSentRequests(sentRes.data || []);
+      console.log('Received exchanges:', receivedRes);
+      console.log('Sent exchanges:', sentRes);
+      
+      const received = Array.isArray(receivedRes?.data) ? receivedRes.data : (Array.isArray(receivedRes) ? receivedRes : []);
+      const sent = Array.isArray(sentRes?.data) ? sentRes.data : (Array.isArray(sentRes) ? sentRes : []);
+      
+      console.log('Processed received:', received);
+      console.log('Processed sent:', sent);
+      
+      setReceivedRequests(received);
+      setSentRequests(sent);
     } catch (error) {
-      console.error('Error loading exchanges:', error);
-      setError('Erreur lors du chargement des échanges');
+      console.error('Error loading exchanges:', error.response?.data || error.message);
+      console.error('Full error:', error);
+      setError(`Erreur lors du chargement des échanges: ${error.response?.data?.message || error.message}`);
     } finally {
       setLoading(false);
     }
@@ -45,7 +56,8 @@ export default function ExchangesPage() {
       setSuccess('Demande acceptée !');
       loadExchanges();
     } catch (error) {
-      setError('Erreur lors de l\'acceptation');
+      console.error('Error accepting exchange:', error.response?.data || error.message);
+      setError(`Erreur lors de l'acceptation: ${error.response?.data?.message || error.message}`);
     }
   };
 
@@ -56,7 +68,8 @@ export default function ExchangesPage() {
       setSuccess('Demande refusée');
       loadExchanges();
     } catch (error) {
-      setError('Erreur lors du refus');
+      console.error('Error refusing exchange:', error.response?.data || error.message);
+      setError(`Erreur lors du refus: ${error.response?.data?.message || error.message}`);
     }
   };
 
@@ -67,7 +80,8 @@ export default function ExchangesPage() {
       setSuccess('Échange marqué comme terminé ! Vous pouvez maintenant laisser un avis.');
       loadExchanges();
     } catch (error) {
-      setError('Erreur lors de la finalisation');
+      console.error('Error completing exchange:', error.response?.data || error.message);
+      setError(`Erreur lors de la finalisation: ${error.response?.data?.message || error.message}`);
     }
   };
 

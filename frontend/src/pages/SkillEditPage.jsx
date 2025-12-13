@@ -71,7 +71,7 @@ export default function SkillEditPage() {
     try {
       const dataToSubmit = {
         ...form,
-        images: form.images && form.images.length > 0 ? JSON.stringify(form.images) : null,
+        images: form.images && form.images.length > 0 ? JSON.stringify(form.images) : (skill?.images || null),
       };
       await skillService.update(id, dataToSubmit);
       navigate(`/skills/${id}`);

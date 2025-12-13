@@ -49,6 +49,7 @@ public class FileStorageService {
 
     public Resource loadAsResource(String filename) throws MalformedURLException {
         Path file = uploadDir.resolve(filename).normalize();
+        @SuppressWarnings("null")
         Resource resource = new UrlResource(file.toUri());
         if (resource.exists() || resource.isReadable()) {
             return resource;

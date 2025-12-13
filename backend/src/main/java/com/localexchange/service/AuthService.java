@@ -77,6 +77,7 @@ public class AuthService {
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             String token = tokenProvider.generateToken(userDetails);
             
+            @SuppressWarnings("null")
             User user = userRepository.findByEmail(loginDTO.getEmail())
                     .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", "email", loginDTO.getEmail()));
             
@@ -93,6 +94,7 @@ public class AuthService {
      * Récupérer l'utilisateur connecté
      */
     public UserDTO getCurrentUser(String email) {
+        @SuppressWarnings("null")
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", "email", email));
         
@@ -103,6 +105,7 @@ public class AuthService {
      * Mettre à jour le profil utilisateur
      */
     public UserDTO updateProfile(String email, ProfileUpdateDTO profileUpdateDTO) {
+        @SuppressWarnings("null")
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", "email", email));
         

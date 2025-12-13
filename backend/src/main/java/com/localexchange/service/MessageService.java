@@ -36,6 +36,7 @@ public class MessageService {
     /**
      * Envoyer un message
      */
+    @SuppressWarnings("null")
     public MessageDTO sendMessage(MessageDTO dto, String expediteurEmail) {
         User expediteur = userRepository.findByEmail(expediteurEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", "email", expediteurEmail));
@@ -43,16 +44,26 @@ public class MessageService {
         ExchangeRequest exchangeRequest = exchangeRequestRepository.findById(dto.getExchangeRequestId())
                 .orElseThrow(() -> new ResourceNotFoundException("Échange", "id", dto.getExchangeRequestId()));
         
-        // Vérifier que l'utilisateur fait partie de l'échange
-        if (!exchangeRequest.getDonateur().getId().equals(expediteur.getId()) &&
-            !exchangeRequest.getBeneficiaire().getId().equals(expediteur.getId())) {
-            throw new UnauthorizedException("Vous n'êtes pas autorisé à envoyer des messages dans cet échange");
+        User destinataire;
+        try {
+            // Vérifier que l'utilisateur fait partie de l'échange
+            if (!exchangeRequest.getDonateur().getId().equals(expediteur.getId()) &&
+                !exchangeRequest.getBeneficiaire().getId().equals(expediteur.getId())) {
+                throw new UnauthorizedException("Vous n'êtes pas autorisé à envoyer des messages dans cet échange");
+            }
+            
+            // Déterminer le destinataire
+            destinataire = exchangeRequest.getDonateur().getId().equals(expediteur.getId())
+                    ? exchangeRequest.getBeneficiaire()
+                    : exchangeRequest.getDonateur();
+            
+            if (destinataire == null) {
+                throw new IllegalStateException("Le destinataire du message n'a pas pu être déterminé.");
+            }
+
+        } catch (NullPointerException e) {
+            throw new IllegalStateException("La demande d'échange avec l'ID " + dto.getExchangeRequestId() + " a des données de participant invalides (donateur ou bénéficiaire manquant).", e);
         }
-        
-        // Déterminer le destinataire
-        User destinataire = exchangeRequest.getDonateur().getId().equals(expediteur.getId())
-                ? exchangeRequest.getBeneficiaire()
-                : exchangeRequest.getDonateur();
         
         Message message = new Message();
         message.setContenu(dto.getContenu());
@@ -80,6 +91,7 @@ public class MessageService {
     /**
      * Récupérer la conversation d'un échange
      */
+    @SuppressWarnings("null")
     public List<MessageDTO> getConversation(Long exchangeId, String userEmail) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", "email", userEmail));

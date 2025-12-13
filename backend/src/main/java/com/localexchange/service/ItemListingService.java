@@ -56,6 +56,7 @@ public class ItemListingService {
     /**
      * Récupérer tous les objets avec filtres
      */
+    @SuppressWarnings("null")
     public Page<ItemListingDTO> getAllItems(String categorie, String search, Pageable pageable) {
         Page<ItemListing> items;
         
@@ -75,6 +76,7 @@ public class ItemListingService {
     /**
      * Récupérer un objet par ID
      */
+    @SuppressWarnings("null")
     public ItemDetailDTO getItemById(Long id) {
         ItemListing item = itemListingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Objet", "id", id));
@@ -85,6 +87,7 @@ public class ItemListingService {
     /**
      * Mettre à jour un objet
      */
+    @SuppressWarnings("null")
     public ItemListingDTO updateItem(Long id, ItemListingDTO dto, String userEmail) {
         ItemListing item = itemListingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Objet", "id", id));
@@ -97,7 +100,9 @@ public class ItemListingService {
         item.setTitre(dto.getTitre());
         item.setDescription(dto.getDescription());
         item.setCategorie(dto.getCategorie());
-        item.setImages(dto.getImages());
+        if (dto.getImages() != null && !dto.getImages().isEmpty()) {
+            item.setImages(dto.getImages());
+        }
         item.setDisponibilite(dto.getDisponibilite());
         item.setCommentaireEchange(dto.getCommentaireEchange());
         
@@ -109,6 +114,7 @@ public class ItemListingService {
     /**
      * Supprimer un objet
      */
+    @SuppressWarnings("null")
     public void deleteItem(Long id, String userEmail) {
         ItemListing item = itemListingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Objet", "id", id));

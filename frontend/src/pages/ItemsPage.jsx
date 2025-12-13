@@ -32,10 +32,12 @@ export default function ItemsPage() {
       if (categorie) params.categorie = categorie;
 
       const res = await itemService.getAll(params);
-      setItems(res.data.content || []);
-      setTotalPages(res.data.totalPages || 0);
+      const items = res?.data?.content || res?.content || (Array.isArray(res) ? res : []);
+      const totalPages = res?.data?.totalPages || res?.totalPages || 0;
+      setItems(items);
+      setTotalPages(totalPages);
     } catch (error) {
-      console.error('Error loading items:', error);
+      console.error('Error loading items:', error.response?.data || error.message);
     } finally {
       setLoading(false);
     }

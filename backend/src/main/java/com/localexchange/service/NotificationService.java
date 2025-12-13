@@ -116,6 +116,7 @@ private NotificationDTO convertToDTO(Notification notification) {
     dto.setId(notification.getId());
     dto.setType(notification.getType().name());
     dto.setMessage(notification.getMessage());
+    dto.setTitle(notification.getMessage());
     dto.setRead(notification.getLu());
     dto.setCreatedAt(notification.getCreatedAt());
     dto.setExchangeId(notification.getExchangeId());

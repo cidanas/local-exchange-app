@@ -67,16 +67,33 @@ export default function ItemDetailPage() {
 
   const handleExchangeSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validation côté client
+    if (!exchangeData.offreEnRetour || !exchangeData.dateEchange) {
+      setError('Tous les champs obligatoires doivent être remplis');
+      return;
+    }
+    
     try {
-      await exchangeService.create({
-        ...exchangeData,
+      const payload = {
+        offreEnRetour: exchangeData.offreEnRetour,
+        dateEchange: exchangeData.dateEchange, // Format: YYYY-MM-DD
+        messageInitial: exchangeData.messageInitial || '',
         itemListingId: parseInt(id),
-      });
+      };
+      
+      console.log('Sending exchange request:', payload);
+      const res = await exchangeService.create(payload);
+      console.log('Exchange created:', res.data);
+      
       setSuccess('Demande d\'échange envoyée avec succès !');
       setShowExchangeModal(false);
+      setExchangeData({ offreEnRetour: '', dateEchange: '', messageInitial: '' });
       setTimeout(() => navigate('/exchanges'), 2000);
     } catch (error) {
-      setError(error.response?.data?.message || 'Erreur lors de l\'envoi de la demande');
+      console.error('Exchange error:', error);
+      const errorMsg = error.response?.data?.message || error.message || 'Erreur lors de l\'envoi de la demande';
+      setError(errorMsg);
     }
   };
 

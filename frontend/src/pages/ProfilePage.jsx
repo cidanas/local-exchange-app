@@ -40,9 +40,9 @@ export default function ProfilePage() {
         skillService.getMySkills(),
         reviewService.getUserReviews(user.id),
       ]);
-      setMyItems(itemsRes.data || []);
-      setMySkills(skillsRes.data || []);
-      setReviews(reviewsRes.data || []);
+      setMyItems(Array.isArray(itemsRes?.data) ? itemsRes.data : (Array.isArray(itemsRes) ? itemsRes : []));
+      setMySkills(Array.isArray(skillsRes?.data) ? skillsRes.data : (Array.isArray(skillsRes) ? skillsRes : []));
+      setReviews(Array.isArray(reviewsRes?.data) ? reviewsRes.data : (Array.isArray(reviewsRes) ? reviewsRes : []));
       setEditData({
         nom: user.nom,
         localisation: user.localisation,
@@ -50,7 +50,7 @@ export default function ProfilePage() {
         phoneNumber: user.phoneNumber || '',
       });
     } catch (error) {
-      console.error('Error loading profile:', error);
+      console.error('Error loading profile:', error.response?.data || error.message);
       setError('Erreur lors du chargement du profil');
     } finally {
       setLoading(false);

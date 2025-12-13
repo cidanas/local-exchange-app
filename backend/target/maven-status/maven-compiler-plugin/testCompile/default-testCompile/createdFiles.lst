@@ -1,0 +1,5 @@
+com\localexchange\integration\AuthControllerIntegrationTest.class
+com\localexchange\unit\AuthenticationServiceTest.class
+com\localexchange\unit\ExchangeServiceTest.class
+com\localexchange\integration\MessagingIntegrationTest.class
+com\localexchange\unit\ExchangeValidationTest.class

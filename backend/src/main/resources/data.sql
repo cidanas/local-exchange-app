@@ -1,1 +1,0 @@
--- No initial data - users create their own accounts

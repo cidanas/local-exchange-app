@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -55,6 +56,7 @@ public class SkillListing {
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
     
+    @JsonIgnore
     @OneToMany(mappedBy = "skillListing", cascade = CascadeType.ALL)
     private List<ExchangeRequest> exchangeRequests = new ArrayList<>();
 }

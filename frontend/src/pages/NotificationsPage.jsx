@@ -22,9 +22,10 @@ export default function NotificationsPage() {
     setLoading(true);
     try {
       const res = await notificationService.getAll();
-      setNotifications(res.data || []);
+      const notifications = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
+      setNotifications(notifications);
     } catch (err) {
-      console.error('Error loading notifications', err);
+      console.error('Error loading notifications', err.response?.data || err.message);
       setError('Impossible de charger les notifications');
     } finally {
       setLoading(false);
