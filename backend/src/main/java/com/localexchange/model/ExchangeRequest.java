@@ -68,4 +68,110 @@ public class ExchangeRequest {
     
     @OneToOne(mappedBy = "exchangeRequest", cascade = CascadeType.ALL)
     private Review review;
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getOffreEnRetour() {
+		return offreEnRetour;
+	}
+
+	public void setOffreEnRetour(String offreEnRetour) {
+		this.offreEnRetour = offreEnRetour;
+	}
+
+	public LocalDate getDateEchange() {
+		return dateEchange;
+	}
+
+	public void setDateEchange(LocalDate dateEchange) {
+		this.dateEchange = dateEchange;
+	}
+
+	public ExchangeStatus getStatut() {
+		return statut;
+	}
+
+	public void setStatut(ExchangeStatus statut) {
+		this.statut = statut;
+	}
+
+	public String getMessageInitial() {
+		return messageInitial;
+	}
+
+	public void setMessageInitial(String messageInitial) {
+		this.messageInitial = messageInitial;
+	}
+
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public LocalDateTime getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(LocalDateTime updatedAt) {
+		this.updatedAt = updatedAt;
+	}
+
+	public User getBeneficiaire() {
+		return beneficiaire;
+	}
+
+	public void setBeneficiaire(User beneficiaire) {
+		this.beneficiaire = beneficiaire;
+	}
+
+	public User getDonateur() {
+		return donateur;
+	}
+
+	public void setDonateur(User donateur) {
+		this.donateur = donateur;
+	}
+
+	public ItemListing getItemListing() {
+		return itemListing;
+	}
+
+	public void setItemListing(ItemListing itemListing) {
+		this.itemListing = itemListing;
+	}
+
+	public SkillListing getSkillListing() {
+		return skillListing;
+	}
+
+	public void setSkillListing(SkillListing skillListing) {
+		this.skillListing = skillListing;
+	}
+
+	public List<Message> getMessages() {
+		return messages;
+	}
+
+	public void setMessages(List<Message> messages) {
+		this.messages = messages;
+	}
+
+	public Review getReview() {
+		return review;
+	}
+
+	public void setReview(Review review) {
+		this.review = review;
+	}
+    
+    
 }

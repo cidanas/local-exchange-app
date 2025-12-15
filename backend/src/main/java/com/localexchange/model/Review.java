@@ -48,4 +48,62 @@ public class Review {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "exchange_request_id", nullable = false)
     private ExchangeRequest exchangeRequest;
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public Integer getNotation() {
+		return notation;
+	}
+
+	public void setNotation(Integer notation) {
+		this.notation = notation;
+	}
+
+	public String getCommentaire() {
+		return commentaire;
+	}
+
+	public void setCommentaire(String commentaire) {
+		this.commentaire = commentaire;
+	}
+
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public User getReviewer() {
+		return reviewer;
+	}
+
+	public void setReviewer(User reviewer) {
+		this.reviewer = reviewer;
+	}
+
+	public User getReviewee() {
+		return reviewee;
+	}
+
+	public void setReviewee(User reviewee) {
+		this.reviewee = reviewee;
+	}
+
+	public ExchangeRequest getExchangeRequest() {
+		return exchangeRequest;
+	}
+
+	public void setExchangeRequest(ExchangeRequest exchangeRequest) {
+		this.exchangeRequest = exchangeRequest;
+	}
+    
+    
 }

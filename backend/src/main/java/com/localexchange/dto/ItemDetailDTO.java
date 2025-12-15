@@ -12,4 +12,14 @@ import lombok.NoArgsConstructor;
 public class ItemDetailDTO extends ItemListingDTO {
     
     private UserDTO owner;
+
+	public UserDTO getOwner() {
+		return owner;
+	}
+
+	public void setOwner(UserDTO owner) {
+		this.owner = owner;
+	}
+    
+    
 }

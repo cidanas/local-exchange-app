@@ -57,7 +57,8 @@ public class ItemListingService {
      * Récupérer tous les objets avec filtres
      */
     public Page<ItemListingDTO> getAllItems(String categorie, String search, Pageable pageable) {
-        Page<ItemListing> items;
+        
+    	Page<ItemListing> items;
         
         if (categorie != null && !categorie.isEmpty() && search != null && !search.isEmpty()) {
             items = itemListingRepository.findByCategorieAndTitreContainingIgnoreCase(categorie, search, pageable);

@@ -1,0 +1,176 @@
+package com.localexchange.service;
+
+import com.localexchange.dto.SkillListingDTO;
+import com.localexchange.exception.ResourceNotFoundException;
+import com.localexchange.exception.UnauthorizedException;
+import com.localexchange.model.SkillListing;
+import com.localexchange.model.User;
+import com.localexchange.repository.ReviewRepository;
+import com.localexchange.repository.SkillListingRepository;
+import com.localexchange.repository.UserRepository;
+import com.localexchange.service.SkillListingService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+public class SkillListingServiceTest {
+
+    @Mock
+    private SkillListingRepository mockSkillListingRepository;
+
+    @Mock
+    private UserRepository mockUserRepository;
+
+    @Mock
+    private ReviewRepository mockReviewRepository;
+
+    @InjectMocks
+    private SkillListingService skillListingService;
+
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
+
+    @Test
+    public void testCreateSkillSuccess() {
+        // Arrange
+        User owner = new User();
+        owner.setId(1L);
+        owner.setEmail("owner@mail.fr");
+        owner.setNom("Alice");
+
+        SkillListingDTO dto = new SkillListingDTO();
+        dto.setTitre("Cours de guitare");
+        dto.setDescription("Apprendre la guitare");
+        dto.setDisponibilites("Week-end");
+        dto.setCommentaireEchange("Amical");
+        dto.setActif(true);
+
+        when(mockUserRepository.findByEmail("owner@mail.fr")).thenReturn(Optional.of(owner));
+        when(mockSkillListingRepository.save(any(SkillListing.class))).thenAnswer(invocation -> {
+            SkillListing skill = invocation.getArgument(0);
+            skill.setId(100L);
+            return skill;
+        });
+        when(mockReviewRepository.getAverageRatingByUserId(owner.getId())).thenReturn(4.5);
+
+        // Act
+        SkillListingDTO result = skillListingService.createSkill(dto, "owner@mail.fr");
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("Cours de guitare", result.getTitre());
+        assertEquals(100L, result.getId());
+        assertEquals(owner.getId(), result.getOwnerId());
+        assertEquals(4.5, result.getOwnerRating());
+    }
+
+    @Test
+    public void testUpdateSkillSuccess() {
+        // Arrange
+        User owner = new User();
+        owner.setId(1L);
+        owner.setEmail("owner@mail.fr");
+        owner.setNom("Alice");
+
+        SkillListing existingSkill = new SkillListing();
+        existingSkill.setId(200L);
+        existingSkill.setTitre("Ancien titre");
+        existingSkill.setOwner(owner);
+
+        SkillListingDTO dto = new SkillListingDTO();
+        dto.setTitre("Nouveau titre");
+        dto.setDescription("Nouvelle description");
+        dto.setDisponibilites("Soir");
+        dto.setCommentaireEchange("Sympa");
+        dto.setActif(true);
+
+        when(mockSkillListingRepository.findById(200L)).thenReturn(Optional.of(existingSkill));
+        when(mockSkillListingRepository.save(any(SkillListing.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(mockReviewRepository.getAverageRatingByUserId(owner.getId())).thenReturn(4.0);
+
+        // Act
+        SkillListingDTO result = skillListingService.updateSkill(200L, dto, "owner@mail.fr");
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("Nouveau titre", result.getTitre());
+        assertEquals("Nouvelle description", result.getDescription());
+        assertEquals("Soir", result.getDisponibilites());
+        assertEquals("Sympa", result.getCommentaireEchange());
+        assertEquals(200L, result.getId());
+    }
+
+    @Test
+    public void testUpdateSkillUnauthorized() {
+        // Arrange
+        User owner = new User();
+        owner.setId(1L);
+        owner.setEmail("owner@mail.fr");
+
+        User otherUser = new User();
+        otherUser.setId(2L);
+        otherUser.setEmail("other@mail.fr");
+
+        SkillListing existingSkill = new SkillListing();
+        existingSkill.setId(300L);
+        existingSkill.setTitre("Titre");
+        existingSkill.setOwner(owner);
+
+        SkillListingDTO dto = new SkillListingDTO();
+        dto.setTitre("Titre modifié");
+
+        when(mockSkillListingRepository.findById(300L)).thenReturn(Optional.of(existingSkill));
+
+        // Act & Assert
+        assertThrows(UnauthorizedException.class,
+                () -> skillListingService.updateSkill(300L, dto, "other@mail.fr"));
+    }
+
+    @Test
+    public void testDeleteSkillSuccess() {
+        // Arrange
+        User owner = new User();
+        owner.setId(1L);
+        owner.setEmail("owner@mail.fr");
+
+        SkillListing skill = new SkillListing();
+        skill.setId(400L);
+        skill.setOwner(owner);
+
+        when(mockSkillListingRepository.findById(400L)).thenReturn(Optional.of(skill));
+
+        // Act
+        skillListingService.deleteSkill(400L, "owner@mail.fr");
+
+        // Assert
+        verify(mockSkillListingRepository, times(1)).delete(skill);
+    }
+
+    @Test
+    public void testDeleteSkillUnauthorized() {
+        // Arrange
+        User owner = new User();
+        owner.setId(1L);
+        owner.setEmail("owner@mail.fr");
+
+        SkillListing skill = new SkillListing();
+        skill.setId(500L);
+        skill.setOwner(owner);
+
+        when(mockSkillListingRepository.findById(500L)).thenReturn(Optional.of(skill));
+
+        // Act & Assert
+        assertThrows(UnauthorizedException.class,
+                () -> skillListingService.deleteSkill(500L, "other@mail.fr"));
+    }
+}

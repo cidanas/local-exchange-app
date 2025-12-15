@@ -47,4 +47,78 @@ public class Notification {
     
     @Column
     private Long skillListingId;
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public NotificationType getType() {
+		return type;
+	}
+
+	public void setType(NotificationType type) {
+		this.type = type;
+	}
+
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
+	public Boolean getLu() {
+		return lu;
+	}
+
+	public void setLu(Boolean lu) {
+		this.lu = lu;
+	}
+
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
+	}
+
+	public Long getExchangeId() {
+		return exchangeId;
+	}
+
+	public void setExchangeId(Long exchangeId) {
+		this.exchangeId = exchangeId;
+	}
+
+	public Long getItemListingId() {
+		return itemListingId;
+	}
+
+	public void setItemListingId(Long itemListingId) {
+		this.itemListingId = itemListingId;
+	}
+
+	public Long getSkillListingId() {
+		return skillListingId;
+	}
+
+	public void setSkillListingId(Long skillListingId) {
+		this.skillListingId = skillListingId;
+	}
+    
+    
 }

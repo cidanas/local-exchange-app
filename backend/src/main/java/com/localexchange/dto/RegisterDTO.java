@@ -14,6 +14,7 @@ public class RegisterDTO {
     
     @Email(message = "Email invalide")
     @NotBlank(message = "L'email est obligatoire")
+    
     private String email;
     
     @NotBlank(message = "Le mot de passe est obligatoire")
@@ -25,4 +26,37 @@ public class RegisterDTO {
     
     @NotBlank(message = "La localisation est obligatoire")
     private String localisation;
+    
+    public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public String getNom() {
+		return nom;
+	}
+
+	public void setNom(String nom) {
+		this.nom = nom;
+	}
+
+	public String getLocalisation() {
+		return localisation;
+	}
+
+	public void setLocalisation(String localisation) {
+		this.localisation = localisation;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+    
+    public String getEmail(){
+    	return this.email;
+    }
 }

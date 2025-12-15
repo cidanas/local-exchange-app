@@ -12,4 +12,13 @@ import lombok.NoArgsConstructor;
 public class SkillDetailDTO extends SkillListingDTO {
     
     private UserDTO owner;
+
+	public UserDTO getOwner() {
+		return owner;
+	}
+
+	public void setOwner(UserDTO owner) {
+		this.owner = owner;
+	}
+    
 }
