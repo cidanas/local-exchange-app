@@ -4,7 +4,9 @@ import com.localexchange.dto.*;
 import com.localexchange.exception.DuplicateEmailException;
 import com.localexchange.exception.InvalidCredentialsException;
 import com.localexchange.exception.ResourceNotFoundException;
+import com.localexchange.model.ExchangeStatus;
 import com.localexchange.model.User;
+import com.localexchange.repository.ExchangeRequestRepository;
 import com.localexchange.repository.ReviewRepository;
 import com.localexchange.repository.UserRepository;
 import com.localexchange.security.JwtTokenProvider;
@@ -28,6 +30,9 @@ public class AuthService {
     
     @Autowired
     private ReviewRepository reviewRepository;
+    
+    @Autowired
+    private ExchangeRequestRepository exchangeRequestRepository;
     
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -142,6 +147,21 @@ public class AuthService {
     }
     
     /**
+     * Compter le nombre d'échanges réalisés (complétés) par un utilisateur
+     */
+    public Integer getTotalCompletedExchanges(Long userId) {
+        @SuppressWarnings("null")
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", "id", userId.toString()));
+        
+        // Compter les échanges où l'utilisateur est donateur OU bénéficiaire et le statut est COMPLETED
+        Long donateurCount = exchangeRequestRepository.countByDonateurAndStatut(user, ExchangeStatus.COMPLETED);
+        Long beneficiaireCount = exchangeRequestRepository.countByBeneficiaireAndStatut(user, ExchangeStatus.COMPLETED);
+        
+        return (int) (donateurCount + beneficiaireCount);
+    }
+    
+    /**
      * Convertir User en UserDTO
      */
     private UserDTO convertToUserDTO(@NonNull User user) {
@@ -155,7 +175,7 @@ public class AuthService {
         dto.setPhoneNumber(user.getPhoneNumber());
         dto.setPhoneVerified(user.getPhoneVerified());
         dto.setAverageRating(getAverageRating(user.getId()));
-        dto.setTotalExchanges(0); // TODO: calculer le nombre réel d'échanges
+        dto.setTotalExchanges(getTotalCompletedExchanges(user.getId()));
         dto.setCreatedAt(user.getCreatedAt());
         
         return dto;
